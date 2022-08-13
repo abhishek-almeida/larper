@@ -11,6 +11,8 @@ import java.io.IOException;
 public class Main extends Application implements JMC {
     @Override
     public void init() {
+//        Score score = new Score(new Part(new Phrase(new Note(C4, MINIM))));
+//        Write.midi(score);
     }
 
     @Override

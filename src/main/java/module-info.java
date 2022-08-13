@@ -3,6 +3,7 @@ module based.larper {
     requires javafx.fxml;
     requires jmusic;
     requires java.sql;
+    requires java.desktop;
 
 
     opens based.larper to javafx.fxml;

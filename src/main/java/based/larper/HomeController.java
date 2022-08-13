@@ -26,6 +26,7 @@ public class HomeController {
 
 
     double length = 0;
+    double final_tempo = 0;
     int order = 3;
     boolean isPlaying = false;
     @FXML
@@ -34,18 +35,14 @@ public class HomeController {
     Button btnOrder;
     @FXML
     Button btnLength;
-    @FXML
-    private Button btnPick;
-    @FXML
-    private Button btnExport;
-    @FXML
-    private Button btnPlay;
+
+    Score final_score = new Score("Generated MIDI");
+
     @FXML
     void playMusic(ActionEvent event) {
         if (!isPlaying) {
             isPlaying = true;
-            Score scr = generateMusic();
-            Play.midi(scr);
+            Play.midi(final_score);
         }
         else {
             System.exit(0);
@@ -57,11 +54,7 @@ public class HomeController {
     @FXML
     private TextField txtLength;
 
-    @FXML
-    TextField txtExport;
-
     File selectedFile = null;
-    String exportFile = null;
 
     @FXML
     void pickFile(ActionEvent event) {
@@ -77,23 +70,28 @@ public class HomeController {
     }
     @FXML
     void setLength(ActionEvent event) {
-        length = Integer.parseInt(txtLength.getText());
+        length = Double.parseDouble((txtLength.getText()));
+        System.out.println(length);
+        generateMusic();
     }
 
     @FXML
     Button btnExportMIDI;
     @FXML
+    TextField txtExport;
+    @FXML
     void exportMIDI() {
-
-        exportFile = txtExport.getText() + ".mid";
-        Score scr = generateMusic();
-        Write.midi(scr, exportFile);
-
+        String exportFile = txtExport.getText() + ".mid";
+        System.out.println(final_score);
+        Write.midi(final_score, exportFile);
     }
 
-    Score generateMusic() {
+
+    void generateMusic() {
         Score scr = new Score();
         Read.midi(scr, String.valueOf(selectedFile));
+        final_tempo = scr.getTempo();
+        System.out.println(scr);
 
         HashMap<ArrayList<String>, ArrayList<String>> notes = new HashMap<>();
         ArrayList<Double> durations = new ArrayList<>();
@@ -115,8 +113,8 @@ public class HomeController {
                 for(int k = 0; k < phrase_count; k++) {
                     int note_count = scr.getPart(j).getPhrase(k).getNoteList().size();
                     for(int l = 0; l < note_count; l++) {
-                        //                        if(scr.getPart(j).getPhrase(k).getNote(l).getPitch() < 0)
-                        //                            continue;
+                                                if(scr.getPart(j).getPhrase(k).getNote(l).getPitch() < 0)
+                                                    continue;
                         notesList.add(scr.getPart(j).getPhrase(k).getNote(l));
                     }
                 }
@@ -142,29 +140,28 @@ public class HomeController {
             subSeq.add(notesList.get(0).getName());
         }
         double sum_length = 0;
-        length = 1000;
         Phrase phrase = new Phrase();
         Part part = new Part();
-        Score score = new Score("Huahahah");
 
         while(sum_length <= length) {
 
             if(notes.containsKey(subSeq)) {
                 int pitch_idx = (int) Math.floor(Math.random() * notes.get(subSeq).size());
                 int duration_idx = (int) Math.floor(Math.random() * durations.size());
+                System.out.println("duration:" + durations.get(duration_idx));
 
                 String pitch_val = notes.get(subSeq).get(pitch_idx);
                 Note temp_note = new Note(pitch_val);
-                temp_note.setDuration(QN);
                 temp_note.setDynamic(100);
                 temp_note.setDuration(durations.get(duration_idx));
+                temp_note.setRhythmValue(durations.get(duration_idx));
                 sum_length += durations.get(duration_idx);
                 phrase.addNote(temp_note);
             }
         }
         part.addPhrase(phrase);
-        score.addPart(part);
-        return score;
+        final_score.addPart(part);
+        final_score.setTempo(final_tempo);
     }
 }
 
